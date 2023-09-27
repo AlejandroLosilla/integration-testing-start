@@ -1,44 +1,51 @@
-import { UserPassword } from "../../domain/models/UserPassword.js";
-import { UserRepository } from "../../domain/repository/UserRepository.js";
-import { MongoClient } from "mongodb";
+import { UserRepository } from "../../domain/repository/UserRepository.js"
+import { MongoClient } from "mongodb"
+import { User } from "../../domain/models/User.js"
+import { UserPassword } from "../../domain/models/UserPassword.js"
 
-export class UserRepositoryMongo extends UserRepository{
+export class UserRepositoryMongo extends UserRepository {
+  constructor() {
+    super()
+    this.client = new MongoClient("mongodb://admin:password@localhost:27017")
+    this.database = this.client.db("my-project")
+    this.users = this.database.collection("users")
+  }
 
-    constructor(){
-        super();
+  async connect() {
+    await this.client.connect()
+  }
 
-        this.url = "mongodb://admin:password@localhost:27017";
-        this.dbName = "EOI-login-integration";
-        this.collectionName = "users";
-        this.client = new MongoClient(this.url);
+  async disconnect() {
+    await this.client.close()
+  }
+
+  async reset() {
+    await this.users.deleteMany({})
+  }
+
+  async save(user) {
+    await this.users.insertOne({ ...user })
+  }
+
+  async findById(id) {
+    const savedUser = await this.users.findOne({ id })
+
+    if (!savedUser) {
+      return null
     }
 
-    async connect(){
-        await this.client.connect();
-        this.database = this.client.db(this.dbName);
-        this.collection = this.database.collection(this.collectionName);
-    }
+    return new User(
+      savedUser.id,
+      savedUser.name,
+      savedUser.email.email,
+      new UserPassword(savedUser.password.password),
+      savedUser.age.age,
+    )
+  }
 
-    async disconnect(){
-        await this.client.close();
-    }
+  async existsByEmail(email) {
+    const savedUser = await this.users.findOne({ "email.email": email }, { projection: { _id: 1 } })
 
-    async reset(){
-        await this.collection.deleteMany({});
-    }
-
-    async save(user){
-        await this.collection.insertOne(user);
-    }
-    
-    async findById(id){
-        const user = await this.collection.findOne({id});
-        return new User(
-            user.id,
-            user.email.email,
-            user.name,
-            user.age,
-            new UserPassword(user.password.password)
-        );
-    }
+    return Boolean(savedUser)
+  }
 }
