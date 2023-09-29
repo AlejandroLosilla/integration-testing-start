@@ -1,12 +1,12 @@
 import { UserRepository } from "../../domain/repository/UserRepository.js"
-import { MongoClient } from "mongodb"
+import { MongoClient } from "./MongoClient.js"
 import { User } from "../../domain/models/User.js"
 import { UserPassword } from "../../domain/models/UserPassword.js"
 
 export class UserRepositoryMongo extends UserRepository {
-  constructor() {
+  constructor({ client = MongoClient } = {}) {
     super()
-    this.client = new MongoClient("mongodb://admin:password@localhost:27017")
+    this.client = client
     this.database = this.client.db("my-project")
     this.users = this.database.collection("users")
   }

@@ -1,18 +1,12 @@
-import { Client } from "pg"
 import { UserRepository } from "../../domain/repository/UserRepository.js"
 import { UserPassword } from "../../domain/models/UserPassword.js"
 import { User } from "../../domain/models/User.js"
+import { PostgresSQLClient } from "./PostgresSQLClient.js"
 
 export class UserRepositoryPostgresSQL extends UserRepository {
-  constructor() {
+  constructor({ client = PostgresSQLClient } = {}) {
     super()
-    this.client = new Client({
-      user: "admin",
-      host: "localhost",
-      database: "my-project",
-      password: "password",
-      port: 5431,
-    })
+    this.client = client
   }
 
   async connect() {

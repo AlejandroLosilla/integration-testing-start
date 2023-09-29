@@ -1,30 +1,42 @@
 import { EmailSender } from "../../domain/services/EmailSender.js"
+import { API_MAILGUN } from "../../temp.js"
 
 export class EmailSenderMailgun extends EmailSender {
+  constructor({
+    domain = "sandbox438c8dd938f0410aa1dd0393b97f4f46.mailgun.org",
+    authUser = "api",
+    apiKey = API_MAILGUN,
+  } = {}) {
+    super()
+    this.domain = domain
+    this.authUser = authUser
+    this.apiKey = apiKey
+  }
   async sendWelcomeEmail(user) {
     const body = new FormData()
-    const domain = "sandbox261f754ab73b43388177e85a621a13fb.mailgun.org"
-
-    body.append("from", `Daniel Ramos <mailgun@${domain}>`)
-    body.append("to", user.email.email)
-    body.append("subject", "Hello")
-    body.append("template", "welcome")
-    body.append("t:variables", JSON.stringify({ name: user.name }))
-
-    const mailgunUser = "api"
-    const apiKey = "TODO"
-    const response = await fetch(`https://api.mailgun.net/v3/${domain}/messages`, {
+    const url = `https://api.mailgun.net/v3/${this.domain}/messages`
+    const options = {
       method: "POST",
       headers: {
-        Authorization: "Basic " + btoa(mailgunUser + ":" + apiKey),
+        Authorization: `Basic ${btoa(`${this.authUser}:${this.apiKey}`)}`,
       },
       body,
-    })
+    }
+    const from = `Excited User <mailgun@${this.domain}>`
+    const to = user.email.email
+    const subject = "Welcome"
+    const text = "Welcome to my app"
 
-    const data = await response.json()
+    body.append("from", from)
+    body.append("to", to)
+    body.append("subject", subject)
+    body.append("text", text)
 
-    if (!response.ok) {
-      throw new Error(data.message)
+    const request = await fetch(url, options)
+    const response = await request.json()
+
+    if (!request.ok) {
+      throw new Error(response.message)
     }
   }
 }
