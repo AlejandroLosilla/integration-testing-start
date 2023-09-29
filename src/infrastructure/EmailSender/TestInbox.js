@@ -1,12 +1,4 @@
 import { sleep } from "../../domain/utils/sleep.js"
-
-export class TestInbox {
-  constructor() {
-    this.messages = []
-  }
-
-  /**
-import { sleep } from "../../domain/utils/sleep.js"
 import { config } from "../Shared/config.js"
 
 export class TestInbox {

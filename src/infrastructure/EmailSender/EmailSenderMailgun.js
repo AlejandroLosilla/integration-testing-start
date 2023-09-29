@@ -1,11 +1,13 @@
 import { EmailSender } from "../../domain/services/EmailSender.js"
-import { API_MAILGUN } from "../../temp.js"
+import { config } from "../Shared/config.js"
+import { default as FormData } from "form-data"
+import fetch from "node-fetch"
 
 export class EmailSenderMailgun extends EmailSender {
   constructor({
     domain = "sandbox438c8dd938f0410aa1dd0393b97f4f46.mailgun.org",
     authUser = "api",
-    apiKey = API_MAILGUN,
+    apiKey = config.mailgun.apiKey,
   } = {}) {
     super()
     this.domain = domain
